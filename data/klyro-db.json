@@ -1,0 +1,349 @@
+{
+  "projects": [
+    {
+      "id": "klyro-studio",
+      "name": "Klyro Studio",
+      "tagline": "Create. Innovate. Share.",
+      "description": "A modern platform to design, build, and showcase your ideas with ease. Built for creators, builders, and community launches.",
+      "category": "Design",
+      "tags": [
+        "Design",
+        "Productivity",
+        "Creative",
+        "Web"
+      ],
+      "creatorName": "Klyro Team",
+      "creatorHandle": "@klyro",
+      "views": 248000,
+      "likes": 12000,
+      "artwork": "klyro",
+      "verified": true,
+      "trendingRank": 1,
+      "hasCinemaDemo": true,
+      "updates": [
+        {
+          "version": "Release 2.4",
+          "date": "November 2026",
+          "note": "Introduced instant 4-step creator launch studio with live preview cards and real-time analytics."
+        },
+        {
+          "version": "Release 2.1",
+          "date": "October 2026",
+          "note": "Added high-contrast obsidian media showcase and verified creator handles."
+        }
+      ],
+      "comments": [
+        {
+          "id": "c1",
+          "author": "Elena Vance",
+          "handle": "@elenavance",
+          "timeAgo": "2h ago",
+          "body": "The monochrome studio layout and live preview flow feel remarkably crisp."
+        },
+        {
+          "id": "c2",
+          "author": "Marcus Chen",
+          "handle": "@mchen_dev",
+          "timeAgo": "6h ago",
+          "body": "Published our first release in under four minutes. Zero friction."
+        }
+      ]
+    },
+    {
+      "id": "nova-studio",
+      "name": "Nova Studio",
+      "tagline": "Create. Innovate. Share.",
+      "description": "Minimalist creative workspace for spatial interfaces, interactive prototypes, and team design systems.",
+      "category": "Design",
+      "tags": [
+        "Design",
+        "Systems",
+        "Studio"
+      ],
+      "creatorName": "Nova Collective",
+      "creatorHandle": "@novastudio",
+      "views": 128000,
+      "likes": 4800,
+      "artwork": "nova",
+      "verified": true,
+      "trendingRank": 2,
+      "updates": [
+        {
+          "version": "v1.8",
+          "date": "November 2026",
+          "note": "Added real-time vector snapping and monochrome component tokens."
+        }
+      ],
+      "comments": [
+        {
+          "id": "c3",
+          "author": "Sora Takahashi",
+          "handle": "@sorat",
+          "timeAgo": "1d ago",
+          "body": "Cleanest prototyping surface we have used this year."
+        }
+      ]
+    },
+    {
+      "id": "zenith",
+      "name": "Zenith",
+      "tagline": "Next-gen design tools.",
+      "description": "Precision motion curves, parametric typography, and fluid glass shaders for modern web products.",
+      "category": "Design",
+      "tags": [
+        "Motion",
+        "Design",
+        "Web"
+      ],
+      "creatorName": "Zenith Labs",
+      "creatorHandle": "@zenithlabs",
+      "views": 98000,
+      "likes": 3100,
+      "artwork": "zenith",
+      "verified": true,
+      "trendingRank": 3,
+      "updates": [
+        {
+          "version": "v3.0",
+          "date": "November 2026",
+          "note": "Hardware-accelerated bezier curve inspector and 60fps export."
+        }
+      ],
+      "comments": [
+        {
+          "id": "c4",
+          "author": "Devon Mercer",
+          "handle": "@dmercer",
+          "timeAgo": "2d ago",
+          "body": "Cubic-bezier scrubbing feels effortless even on complex scenes."
+        }
+      ]
+    },
+    {
+      "id": "orbit-ai",
+      "name": "Orbit AI",
+      "tagline": "AI made simple.",
+      "description": "Composable workflow agents and structured inference pipelines with transparent execution traces.",
+      "category": "AI",
+      "tags": [
+        "AI",
+        "Automation",
+        "Agents"
+      ],
+      "creatorName": "Orbit Systems",
+      "creatorHandle": "@orbitai",
+      "views": 72000,
+      "likes": 2700,
+      "artwork": "orbit",
+      "verified": true,
+      "trendingRank": 4,
+      "updates": [
+        {
+          "version": "v2.2",
+          "date": "October 2026",
+          "note": "Sub-200ms tool routing and multi-step deterministic verification."
+        }
+      ],
+      "comments": []
+    },
+    {
+      "id": "pixelcraft",
+      "name": "PixelCraft",
+      "tagline": "Build. Play. Create.",
+      "description": "Lightweight browser world-builder and procedural terrain engine for independent game creators.",
+      "category": "Games",
+      "tags": [
+        "Games",
+        "Terrain",
+        "WebGL"
+      ],
+      "creatorName": "PixelCraft Guild",
+      "creatorHandle": "@pixelcraft",
+      "views": 64000,
+      "likes": 1900,
+      "artwork": "pixelcraft",
+      "verified": true,
+      "trendingRank": 5,
+      "updates": [],
+      "comments": []
+    },
+    {
+      "id": "stackforge",
+      "name": "StackForge",
+      "tagline": "Developer toolkit.",
+      "description": "Zero-config edge deployments, typed schema migrations, and modular cloud primitives for fast teams.",
+      "category": "Developer Tools",
+      "tags": [
+        "Developer Tools",
+        "Open Source",
+        "CLI"
+      ],
+      "creatorName": "StackForge Core",
+      "creatorHandle": "@stackforge",
+      "views": 52000,
+      "likes": 1500,
+      "artwork": "stackforge",
+      "verified": true,
+      "trendingRank": 6,
+      "updates": [],
+      "comments": []
+    },
+    {
+      "id": "edusphere",
+      "name": "EduSphere",
+      "tagline": "Learn by doing.",
+      "description": "Interactive visual labs and structured technical cohorts built for curious self-directed learners.",
+      "category": "Education",
+      "tags": [
+        "Education",
+        "Interactive",
+        "Open Source"
+      ],
+      "creatorName": "EduSphere Foundation",
+      "creatorHandle": "@edusphere",
+      "views": 41000,
+      "likes": 1200,
+      "artwork": "edusphere",
+      "verified": true,
+      "trendingRank": 7,
+      "updates": [],
+      "comments": []
+    }
+  ],
+  "coins": [
+    {
+      "id": "coin-klyro-studio",
+      "projectId": "klyro-studio",
+      "ownerUid": "klyro-official",
+      "name": "Klyro Studio",
+      "ticker": "KLYR",
+      "network": "Solana",
+      "contractAddress": "KLyR8mP4xQ9vN2wL7zR5tB3cV6nM1kJ4hG8fD2sA9pE3w",
+      "creatorWallet": "KLyR8mP4xQ9vN2wL7zR5tB3cV6nM1kJ4hG8fD2sA9pE3w",
+      "totalSupply": 1000000000,
+      "creatorFeePct": 0.5,
+      "targetCapUsd": 69000,
+      "priceUsd": 0.000542,
+      "marketCapUsd": 54200,
+      "volume24hUsd": 178400,
+      "bondingProgress": 78.5,
+      "holdersCount": 1842,
+      "createdAt": "2026-11-01T10:00:00.000Z",
+      "updatedAt": "2026-11-25T10:00:00.000Z"
+    },
+    {
+      "id": "coin-nova-studio",
+      "projectId": "nova-studio",
+      "ownerUid": "nova-official",
+      "name": "Nova Studio",
+      "ticker": "NOVA",
+      "network": "Base",
+      "contractAddress": "0x71bE63f3384f5fb98995898A86B02Fb2426c5788",
+      "creatorWallet": "0x71bE63f3384f5fb98995898A86B02Fb2426c5788",
+      "totalSupply": 1000000000,
+      "creatorFeePct": 0.5,
+      "targetCapUsd": 69000,
+      "priceUsd": 0.000418,
+      "marketCapUsd": 41800,
+      "volume24hUsd": 94200,
+      "bondingProgress": 60.6,
+      "holdersCount": 912,
+      "createdAt": "2026-11-04T12:00:00.000Z",
+      "updatedAt": "2026-11-25T10:00:00.000Z"
+    },
+    {
+      "id": "coin-zenith",
+      "projectId": "zenith",
+      "ownerUid": "zenith-official",
+      "name": "Zenith",
+      "ticker": "ZNTH",
+      "network": "Solana",
+      "contractAddress": "ZNth4pK9wR2mX6vL8qJ3nB5cT7yF1dS9hA2gE4uW6rM8p",
+      "creatorWallet": "ZNth4pK9wR2mX6vL8qJ3nB5cT7yF1dS9hA2gE4uW6rM8p",
+      "totalSupply": 1000000000,
+      "creatorFeePct": 0.5,
+      "targetCapUsd": 69000,
+      "priceUsd": 0.000295,
+      "marketCapUsd": 29500,
+      "volume24hUsd": 61500,
+      "bondingProgress": 42.8,
+      "holdersCount": 640,
+      "createdAt": "2026-11-06T14:00:00.000Z",
+      "updatedAt": "2026-11-25T10:00:00.000Z"
+    },
+    {
+      "id": "coin-orbit-ai",
+      "projectId": "orbit-ai",
+      "ownerUid": "orbit-official",
+      "name": "Orbit AI",
+      "ticker": "ORBT",
+      "network": "Base",
+      "contractAddress": "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc",
+      "creatorWallet": "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc",
+      "totalSupply": 1000000000,
+      "creatorFeePct": 1,
+      "targetCapUsd": 69000,
+      "priceUsd": 0.000234,
+      "marketCapUsd": 23400,
+      "volume24hUsd": 48900,
+      "bondingProgress": 33.9,
+      "holdersCount": 518,
+      "createdAt": "2026-11-08T09:00:00.000Z",
+      "updatedAt": "2026-11-25T10:00:00.000Z"
+    }
+  ],
+  "trades": {
+    "coin-klyro-studio": [
+      {
+        "id": "tr-1",
+        "coinId": "coin-klyro-studio",
+        "traderUid": "seed-1",
+        "traderHandle": "@elenavance",
+        "side": "buy",
+        "amountUsd": 420,
+        "tokenAmount": 774907,
+        "priceUsd": 0.000542,
+        "createdAt": "2026-11-25T09:42:00.000Z"
+      },
+      {
+        "id": "tr-2",
+        "coinId": "coin-klyro-studio",
+        "traderUid": "seed-2",
+        "traderHandle": "@mchen_dev",
+        "side": "buy",
+        "amountUsd": 185,
+        "tokenAmount": 346479,
+        "priceUsd": 0.000534,
+        "createdAt": "2026-11-25T09:18:00.000Z"
+      },
+      {
+        "id": "tr-3",
+        "coinId": "coin-klyro-studio",
+        "traderUid": "seed-3",
+        "traderHandle": "@sorat",
+        "side": "sell",
+        "amountUsd": 95,
+        "tokenAmount": 179924,
+        "priceUsd": 0.000528,
+        "createdAt": "2026-11-25T08:55:00.000Z"
+      }
+    ]
+  },
+  "savedIds": {},
+  "likedIds": {},
+  "followingHandles": {},
+  "joinedCommunities": {},
+  "completedGuides": {},
+  "settings": {
+    "displayName": "Klyro Creator",
+    "creatorHandle": "@klyro_builder",
+    "bio": "Building and launching on Klyro.",
+    "photoURL": "",
+    "profileRim": "silver",
+    "badges": [],
+    "proEnabled": false,
+    "sandboxBalanceUsd": 5000,
+    "demoWalletConnected": true,
+    "demoWalletAddress": "klyro1q8x...7m4z"
+  }
+}

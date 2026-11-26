@@ -1,0 +1,247 @@
+{
+  "entities": {
+    "SiteConfig": {
+      "title": "SiteConfig",
+      "description": "Singleton bootstrap record locking the first signed-up Founder/Owner account.",
+      "type": "object",
+      "properties": {
+        "founderUid": {"type": "string", "minLength": 1, "maxLength": 128},
+        "founderHandle": {"type": "string", "minLength": 2, "maxLength": 40},
+        "claimedAt": {"type": "string", "format": "date-time"}
+      },
+      "required": ["founderUid", "founderHandle", "claimedAt"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Public creator profile for a Klyro account (no PII).",
+      "type": "object",
+      "properties": {
+        "uid": {"type": "string", "minLength": 1, "maxLength": 128},
+        "displayName": {"type": "string", "minLength": 1, "maxLength": 60},
+        "handle": {"type": "string", "minLength": 2, "maxLength": 40, "pattern": "^@[a-zA-Z0-9_.-]+$"},
+        "photoURL": {"type": "string", "maxLength": 500},
+        "profileRim": {"type": "string", "enum": ["none", "silver", "obsidian", "platinum", "mercury", "founder-crown"]},
+        "bio": {"type": "string", "maxLength": 240},
+        "theme": {"type": "string", "enum": ["light", "dark"]},
+        "badges": {"type": "array"},
+        "createdAt": {"type": "string", "format": "date-time"},
+        "updatedAt": {"type": "string", "format": "date-time"}
+      },
+      "required": ["uid", "displayName", "handle", "createdAt", "updatedAt"]
+    },
+    "UserPrivateAccount": {
+      "title": "UserPrivateAccount",
+      "description": "Private PII, account plan flags, and sandbox USD balance restricted strictly to the account owner.",
+      "type": "object",
+      "properties": {
+        "uid": {"type": "string", "minLength": 1, "maxLength": 128},
+        "email": {"type": "string", "format": "email", "maxLength": 160},
+        "proEnabled": {"type": "boolean"},
+        "sandboxBalanceUsd": {"type": "number"},
+        "createdAt": {"type": "string", "format": "date-time"},
+        "updatedAt": {"type": "string", "format": "date-time"}
+      },
+      "required": ["uid", "email", "proEnabled", "createdAt", "updatedAt"]
+    },
+    "LinkedWallet": {
+      "title": "LinkedWallet",
+      "description": "A Web3 wallet address linked to a user account.",
+      "type": "object",
+      "properties": {
+        "id": {"type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_-]+$"},
+        "uid": {"type": "string", "minLength": 1, "maxLength": 128},
+        "chain": {"type": "string", "enum": ["Solana", "Hyperliquid", "Base", "Ethereum", "BNB Chain", "Arbitrum", "Optimism", "Polygon", "Avalanche", "Sui", "TON", "Tron", "Bitcoin"]},
+        "provider": {"type": "string", "enum": ["Phantom", "MetaMask", "Solflare", "Coinbase", "Browser", "Manual", "Imported", "Sandbox"]},
+        "address": {"type": "string", "minLength": 20, "maxLength": 80},
+        "label": {"type": "string", "minLength": 1, "maxLength": 40},
+        "isPrimary": {"type": "boolean"},
+        "verified": {"type": "boolean"},
+        "linkedAt": {"type": "string", "format": "date-time"}
+      },
+      "required": ["id", "uid", "chain", "provider", "address", "label", "isPrimary", "verified", "linkedAt"]
+    },
+    "Project": {
+      "title": "Project",
+      "description": "A project published on Klyro.",
+      "type": "object",
+      "properties": {
+        "id": {"type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_-]+$"},
+        "ownerUid": {"type": "string", "minLength": 1, "maxLength": 128},
+        "name": {"type": "string", "minLength": 2, "maxLength": 60},
+        "tagline": {"type": "string", "minLength": 1, "maxLength": 120},
+        "description": {"type": "string", "minLength": 1, "maxLength": 800},
+        "category": {"type": "string", "enum": ["AI", "Developer Tools", "Games", "Design", "Open Source", "Education"]},
+        "artwork": {"type": "string", "enum": ["klyro", "nova", "zenith", "orbit", "pixelcraft", "stackforge", "edusphere"]},
+        "customCoverUrl": {"type": "string", "maxLength": 500},
+        "creatorName": {"type": "string", "minLength": 1, "maxLength": 60},
+        "creatorHandle": {"type": "string", "minLength": 2, "maxLength": 40},
+        "tags": {"type": "array"},
+        "views": {"type": "number"},
+        "likes": {"type": "number"},
+        "coinId": {"type": "string", "maxLength": 128},
+        "coinTicker": {"type": "string", "maxLength": 12},
+        "contractAddress": {"type": "string", "maxLength": 80},
+        "verified": {"type": "boolean"},
+        "officialPublished": {"type": "boolean"},
+        "hasCinemaDemo": {"type": "boolean"},
+        "createdAt": {"type": "string", "format": "date-time"},
+        "updatedAt": {"type": "string", "format": "date-time"}
+      },
+      "required": ["id", "ownerUid", "name", "tagline", "description", "category", "artwork", "creatorName", "creatorHandle", "tags", "views", "likes", "verified", "createdAt", "updatedAt"]
+    },
+    "ProjectFile": {
+      "title": "ProjectFile",
+      "description": "File attachment belonging to a Klyro project.",
+      "type": "object",
+      "properties": {
+        "id": {"type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_-]+$"},
+        "projectId": {"type": "string", "minLength": 1, "maxLength": 128},
+        "ownerUid": {"type": "string", "minLength": 1, "maxLength": 128},
+        "name": {"type": "string", "minLength": 1, "maxLength": 140},
+        "mimeType": {"type": "string", "minLength": 1, "maxLength": 100},
+        "sizeBytes": {"type": "number"},
+        "url": {"type": "string", "minLength": 1, "maxLength": 500},
+        "previewText": {"type": "string", "maxLength": 20000},
+        "createdAt": {"type": "string", "format": "date-time"}
+      },
+      "required": ["id", "projectId", "ownerUid", "name", "mimeType", "sizeBytes", "url", "createdAt"]
+    },
+    "ProjectComment": {
+      "title": "ProjectComment",
+      "description": "User comment on a project.",
+      "type": "object",
+      "properties": {
+        "id": {"type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_-]+$"},
+        "projectId": {"type": "string", "minLength": 1, "maxLength": 128},
+        "authorUid": {"type": "string", "minLength": 1, "maxLength": 128},
+        "authorName": {"type": "string", "minLength": 1, "maxLength": 60},
+        "authorHandle": {"type": "string", "minLength": 2, "maxLength": 40},
+        "body": {"type": "string", "minLength": 1, "maxLength": 500},
+        "createdAt": {"type": "string", "format": "date-time"}
+      },
+      "required": ["id", "projectId", "authorUid", "authorName", "authorHandle", "body", "createdAt"]
+    },
+    "ProjectCoin": {
+      "title": "ProjectCoin",
+      "description": "Token launched alongside a Klyro project.",
+      "type": "object",
+      "properties": {
+        "id": {"type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_-]+$"},
+        "projectId": {"type": "string", "minLength": 1, "maxLength": 128},
+        "ownerUid": {"type": "string", "minLength": 1, "maxLength": 128},
+        "name": {"type": "string", "minLength": 2, "maxLength": 50},
+        "ticker": {"type": "string", "minLength": 2, "maxLength": 10, "pattern": "^[A-Z0-9]+$"},
+        "network": {"type": "string", "enum": ["Solana", "Hyperliquid", "Base", "Ethereum", "BNB Chain", "Arbitrum", "Optimism", "Polygon", "Avalanche", "Sui", "TON", "Tron", "Bitcoin"]},
+        "contractAddress": {"type": "string", "minLength": 20, "maxLength": 80},
+        "creatorWallet": {"type": "string", "maxLength": 80},
+        "assetClass": {"type": "string", "enum": ["coin", "perp", "stock"]},
+        "stockSymbol": {"type": "string", "maxLength": 12},
+        "stockCompany": {"type": "string", "maxLength": 80},
+        "stockExchange": {"type": "string", "maxLength": 24},
+        "fundingRatePct": {"type": "number"},
+        "openInterestUsd": {"type": "number"},
+        "maxLeverage": {"type": "number"},
+        "totalSupply": {"type": "number"},
+        "creatorFeePct": {"type": "number"},
+        "targetCapUsd": {"type": "number"},
+        "priceUsd": {"type": "number"},
+        "marketCapUsd": {"type": "number"},
+        "volume24hUsd": {"type": "number"},
+        "bondingProgress": {"type": "number"},
+        "holdersCount": {"type": "number"},
+        "createdAt": {"type": "string", "format": "date-time"},
+        "updatedAt": {"type": "string", "format": "date-time"}
+      },
+      "required": ["id", "projectId", "ownerUid", "name", "ticker", "network", "contractAddress", "totalSupply", "creatorFeePct", "targetCapUsd", "priceUsd", "marketCapUsd", "volume24hUsd", "bondingProgress", "holdersCount", "createdAt", "updatedAt"]
+    },
+    "CoinTrade": {
+      "title": "CoinTrade",
+      "description": "Simulated trade record for a project coin.",
+      "type": "object",
+      "properties": {
+        "id": {"type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_-]+$"},
+        "coinId": {"type": "string", "minLength": 1, "maxLength": 128},
+        "traderUid": {"type": "string", "minLength": 1, "maxLength": 128},
+        "traderHandle": {"type": "string", "minLength": 2, "maxLength": 40},
+        "side": {"type": "string", "enum": ["buy", "sell"]},
+        "amountUsd": {"type": "number"},
+        "tokenAmount": {"type": "number"},
+        "priceUsd": {"type": "number"},
+        "leverage": {"type": "number"},
+        "createdAt": {"type": "string", "format": "date-time"}
+      },
+      "required": ["id", "coinId", "traderUid", "traderHandle", "side", "amountUsd", "tokenAmount", "priceUsd", "createdAt"]
+    },
+    "UserHolding": {
+      "title": "UserHolding",
+      "description": "User's simulated token balance for a launched coin.",
+      "type": "object",
+      "properties": {
+        "uid": {"type": "string", "minLength": 1, "maxLength": 128},
+        "coinId": {"type": "string", "minLength": 1, "maxLength": 128},
+        "ticker": {"type": "string", "minLength": 2, "maxLength": 10},
+        "balance": {"type": "number"},
+        "avgBuyPriceUsd": {"type": "number"},
+        "updatedAt": {"type": "string", "format": "date-time"}
+      },
+      "required": ["uid", "coinId", "ticker", "balance", "avgBuyPriceUsd", "updatedAt"]
+    },
+    "UserBookmark": {
+      "title": "UserBookmark",
+      "description": "Saved/watchlisted project marker for a user.",
+      "type": "object",
+      "properties": {
+        "uid": {"type": "string", "minLength": 1, "maxLength": 128},
+        "projectId": {"type": "string", "minLength": 1, "maxLength": 128},
+        "createdAt": {"type": "string", "format": "date-time"}
+      },
+      "required": ["uid", "projectId", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/meta/{docId}": {
+      "schema": {"$ref": "#/entities/SiteConfig"},
+      "description": "Singleton bootstrap document locking first-signup Founder/Owner roles."
+    },
+    "/users/{userId}": {
+      "schema": {"$ref": "#/entities/UserProfile"},
+      "description": "Public creator profile document."
+    },
+    "/users/{userId}/private/{docId}": {
+      "schema": {"$ref": "#/entities/UserPrivateAccount"},
+      "description": "Private user account metadata including email and sandbox balance."
+    },
+    "/users/{userId}/wallets/{walletId}": {
+      "schema": {"$ref": "#/entities/LinkedWallet"},
+      "description": "Web3 wallets linked by the user."
+    },
+    "/users/{userId}/holdings/{coinId}": {
+      "schema": {"$ref": "#/entities/UserHolding"},
+      "description": "User's simulated coin holdings."
+    },
+    "/users/{userId}/bookmarks/{projectId}": {
+      "schema": {"$ref": "#/entities/UserBookmark"},
+      "description": "User's saved projects."
+    },
+    "/projects/{projectId}": {
+      "schema": {"$ref": "#/entities/Project"},
+      "description": "Publicly discoverable Klyro projects."
+    },
+    "/projects/{projectId}/files/{fileId}": {
+      "schema": {"$ref": "#/entities/ProjectFile"},
+      "description": "Files attached to a Klyro project."
+    },
+    "/projects/{projectId}/comments/{commentId}": {
+      "schema": {"$ref": "#/entities/ProjectComment"},
+      "description": "Comments on a Klyro project."
+    },
+    "/coins/{coinId}": {
+      "schema": {"$ref": "#/entities/ProjectCoin"},
+      "description": "Coins launched alongside Klyro projects."
+    },
+    "/coins/{coinId}/trades/{tradeId}": {
+      "schema": {"$ref": "#/entities/CoinTrade"},
+      "description": "Simulated trade records for a coin."
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "KLYRO — 15s Product Launch Film",
+  "description": "A 15-second luxury monochrome product launch film and interactive cinema player for KLYRO, the Web3 meme coin launchpad and creator platform.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,390 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Boot-time connectivity check doc
+    match /test/{docId} {
+      allow get: if isValidId(docId);
+    }
+
+    // =====================================================================
+    // GLOBAL HELPERS
+    // =====================================================================
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isFounder() {
+      return isVerifiedUser()
+        && exists(/databases/$(database)/documents/meta/siteConfig)
+        && get(/databases/$(database)/documents/meta/siteConfig).data.founderUid == request.auth.uid;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isOptString(data, field, maxLen) {
+      return !(field in data) || (data[field] is string && data[field].size() <= maxLen);
+    }
+
+    function isOptBool(data, field) {
+      return !(field in data) || (data[field] is bool);
+    }
+
+    // =====================================================================
+    // ENTITY VALIDATION HELPERS
+    // =====================================================================
+    function isValidSiteConfig(data) {
+      return data.keys().hasAll(['founderUid', 'founderHandle', 'claimedAt'])
+        && data.keys().hasOnly(['founderUid', 'founderHandle', 'claimedAt'])
+        && data.founderUid is string && data.founderUid.size() >= 1 && data.founderUid.size() <= 128
+        && data.founderHandle is string && data.founderHandle.size() >= 2 && data.founderHandle.size() <= 40
+        && data.claimedAt is string && data.claimedAt.size() <= 64;
+    }
+
+    function isValidUserProfile(data, userId) {
+      return data.keys().hasAll(['uid', 'displayName', 'handle', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'displayName', 'handle', 'photoURL', 'profileRim', 'bio', 'theme', 'badges', 'createdAt', 'updatedAt'])
+        && data.uid is string && data.uid == userId && data.uid.size() <= 128
+        && data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 60
+        && data.handle is string && data.handle.size() >= 2 && data.handle.size() <= 40
+        && data.handle.matches('^@[a-zA-Z0-9_.-]+$')
+        && isOptString(data, 'photoURL', 500)
+        && (!('profileRim' in data) || (data.profileRim is string && data.profileRim in ['none', 'silver', 'obsidian', 'platinum', 'mercury', 'founder-crown']))
+        && isOptString(data, 'bio', 240)
+        && (!('theme' in data) || (data.theme is string && data.theme in ['light', 'dark']))
+        && (!('badges' in data) || (data.badges is list && data.badges.size() <= 6 && (data.badges.size() == 0 || (data.badges[0] is string && data.badges.hasOnly(['Owner', 'Founder', 'Moderator', 'Developer', 'Verified'])))))
+        && data.createdAt is string && data.createdAt.size() <= 64
+        && data.updatedAt is string && data.updatedAt.size() <= 64;
+    }
+
+    function isValidPrivateAccount(data, userId) {
+      return data.keys().hasAll(['uid', 'email', 'proEnabled', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'email', 'proEnabled', 'sandboxBalanceUsd', 'createdAt', 'updatedAt'])
+        && data.uid is string && data.uid == userId && data.uid.size() <= 128
+        && data.email is string && data.email.size() >= 3 && data.email.size() <= 160
+        && data.proEnabled is bool
+        && (!('sandboxBalanceUsd' in data) || (data.sandboxBalanceUsd is number && data.sandboxBalanceUsd >= 0 && data.sandboxBalanceUsd <= 10000000))
+        && data.createdAt is string && data.createdAt.size() <= 64
+        && data.updatedAt is string && data.updatedAt.size() <= 64;
+    }
+
+    function isValidWallet(data, userId, walletId) {
+      return data.keys().hasAll(['id', 'uid', 'chain', 'provider', 'address', 'label', 'isPrimary', 'verified', 'linkedAt'])
+        && data.keys().hasOnly(['id', 'uid', 'chain', 'provider', 'address', 'label', 'isPrimary', 'verified', 'linkedAt'])
+        && data.id is string && data.id == walletId && isValidId(data.id)
+        && data.uid is string && data.uid == userId && data.uid.size() <= 128
+        && data.chain in ['Solana', 'Hyperliquid', 'Base', 'Ethereum', 'BNB Chain', 'Arbitrum', 'Optimism', 'Polygon', 'Avalanche', 'Sui', 'TON', 'Tron', 'Bitcoin']
+        && data.provider in ['Phantom', 'MetaMask', 'Solflare', 'Coinbase', 'Browser', 'Manual', 'Imported', 'Sandbox']
+        && data.address is string && data.address.size() >= 20 && data.address.size() <= 80
+        && data.label is string && data.label.size() >= 1 && data.label.size() <= 40
+        && data.isPrimary is bool
+        && data.verified is bool
+        && data.linkedAt is string && data.linkedAt.size() <= 64;
+    }
+
+    function isValidHolding(data, userId, coinId) {
+      return data.keys().hasAll(['uid', 'coinId', 'ticker', 'balance', 'avgBuyPriceUsd', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'coinId', 'ticker', 'balance', 'avgBuyPriceUsd', 'updatedAt'])
+        && data.uid is string && data.uid == userId && data.uid.size() <= 128
+        && data.coinId is string && data.coinId == coinId && isValidId(data.coinId)
+        && data.ticker is string && data.ticker.size() >= 2 && data.ticker.size() <= 10
+        && data.balance is number && data.balance >= 0
+        && data.avgBuyPriceUsd is number && data.avgBuyPriceUsd >= 0
+        && data.updatedAt is string && data.updatedAt.size() <= 64;
+    }
+
+    function isValidBookmark(data, userId, projectId) {
+      return data.keys().hasAll(['uid', 'projectId', 'createdAt'])
+        && data.keys().hasOnly(['uid', 'projectId', 'createdAt'])
+        && data.uid is string && data.uid == userId && data.uid.size() <= 128
+        && data.projectId is string && data.projectId == projectId && isValidId(data.projectId)
+        && data.createdAt is string && data.createdAt.size() <= 64;
+    }
+
+    function isValidProject(data, projectId) {
+      return data.keys().hasAll(['id', 'ownerUid', 'name', 'tagline', 'description', 'category', 'artwork', 'creatorName', 'creatorHandle', 'tags', 'views', 'likes', 'verified', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'ownerUid', 'name', 'tagline', 'description', 'category', 'artwork', 'customCoverUrl', 'creatorName', 'creatorHandle', 'tags', 'views', 'likes', 'coinId', 'coinTicker', 'contractAddress', 'verified', 'officialPublished', 'hasCinemaDemo', 'createdAt', 'updatedAt'])
+        && data.id is string && data.id == projectId && isValidId(data.id)
+        && data.ownerUid is string && data.ownerUid.size() >= 1 && data.ownerUid.size() <= 128
+        && data.name is string && data.name.size() >= 2 && data.name.size() <= 60
+        && data.tagline is string && data.tagline.size() >= 1 && data.tagline.size() <= 120
+        && data.description is string && data.description.size() >= 1 && data.description.size() <= 800
+        && data.category in ['AI', 'Developer Tools', 'Games', 'Design', 'Open Source', 'Education']
+        && data.artwork in ['klyro', 'nova', 'zenith', 'orbit', 'pixelcraft', 'stackforge', 'edusphere']
+        && isOptString(data, 'customCoverUrl', 500)
+        && data.creatorName is string && data.creatorName.size() >= 1 && data.creatorName.size() <= 60
+        && data.creatorHandle is string && data.creatorHandle.size() >= 2 && data.creatorHandle.size() <= 40
+        && data.tags is list && data.tags.size() >= 1 && data.tags.size() <= 6 && data.tags[0] is string
+        && data.views is number && data.views >= 0
+        && data.likes is number && data.likes >= 0
+        && isOptString(data, 'coinId', 128)
+        && isOptString(data, 'coinTicker', 12)
+        && isOptString(data, 'contractAddress', 80)
+        && data.verified is bool
+        && isOptBool(data, 'officialPublished')
+        && isOptBool(data, 'hasCinemaDemo')
+        && data.createdAt is string && data.createdAt.size() <= 64
+        && data.updatedAt is string && data.updatedAt.size() <= 64;
+    }
+
+    function isValidProjectFile(data, projectId, fileId) {
+      return data.keys().hasAll(['id', 'projectId', 'ownerUid', 'name', 'mimeType', 'sizeBytes', 'url', 'createdAt'])
+        && data.keys().hasOnly(['id', 'projectId', 'ownerUid', 'name', 'mimeType', 'sizeBytes', 'url', 'previewText', 'createdAt'])
+        && data.id is string && data.id == fileId && isValidId(data.id)
+        && data.projectId is string && data.projectId == projectId && isValidId(data.projectId)
+        && data.ownerUid is string && data.ownerUid.size() >= 1 && data.ownerUid.size() <= 128
+        && data.name is string && data.name.size() >= 1 && data.name.size() <= 140
+        && data.mimeType is string && data.mimeType.size() >= 1 && data.mimeType.size() <= 100
+        && data.sizeBytes is number && data.sizeBytes >= 0 && data.sizeBytes <= 5242880
+        && data.url is string && data.url.size() >= 1 && data.url.size() <= 500
+        && isOptString(data, 'previewText', 20000)
+        && data.createdAt is string && data.createdAt.size() <= 64;
+    }
+
+    function isValidComment(data, projectId, commentId) {
+      return data.keys().hasAll(['id', 'projectId', 'authorUid', 'authorName', 'authorHandle', 'body', 'createdAt'])
+        && data.keys().hasOnly(['id', 'projectId', 'authorUid', 'authorName', 'authorHandle', 'body', 'createdAt'])
+        && data.id is string && data.id == commentId && isValidId(data.id)
+        && data.projectId is string && data.projectId == projectId && isValidId(data.projectId)
+        && data.authorUid is string && data.authorUid.size() >= 1 && data.authorUid.size() <= 128
+        && data.authorName is string && data.authorName.size() >= 1 && data.authorName.size() <= 60
+        && data.authorHandle is string && data.authorHandle.size() >= 2 && data.authorHandle.size() <= 40
+        && data.body is string && data.body.size() >= 1 && data.body.size() <= 500
+        && data.createdAt is string && data.createdAt.size() <= 64;
+    }
+
+    function isValidCoin(data, coinId) {
+      return data.keys().hasAll(['id', 'projectId', 'ownerUid', 'name', 'ticker', 'network', 'contractAddress', 'totalSupply', 'creatorFeePct', 'targetCapUsd', 'priceUsd', 'marketCapUsd', 'volume24hUsd', 'bondingProgress', 'holdersCount', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'projectId', 'ownerUid', 'name', 'ticker', 'network', 'contractAddress', 'creatorWallet', 'assetClass', 'stockSymbol', 'stockCompany', 'stockExchange', 'fundingRatePct', 'openInterestUsd', 'maxLeverage', 'totalSupply', 'creatorFeePct', 'targetCapUsd', 'priceUsd', 'marketCapUsd', 'volume24hUsd', 'bondingProgress', 'holdersCount', 'createdAt', 'updatedAt'])
+        && data.id is string && data.id == coinId && isValidId(data.id)
+        && data.projectId is string && isValidId(data.projectId)
+        && data.ownerUid is string && data.ownerUid.size() >= 1 && data.ownerUid.size() <= 128
+        && data.name is string && data.name.size() >= 2 && data.name.size() <= 50
+        && data.ticker is string && data.ticker.size() >= 2 && data.ticker.size() <= 10 && data.ticker.matches('^[A-Z0-9]+$')
+        && data.network in ['Solana', 'Hyperliquid', 'Base', 'Ethereum', 'BNB Chain', 'Arbitrum', 'Optimism', 'Polygon', 'Avalanche', 'Sui', 'TON', 'Tron', 'Bitcoin']
+        && data.contractAddress is string && data.contractAddress.size() >= 20 && data.contractAddress.size() <= 80
+        && isOptString(data, 'creatorWallet', 80)
+        && (!('assetClass' in data) || (data.assetClass is string && data.assetClass in ['coin', 'perp', 'stock']))
+        && isOptString(data, 'stockSymbol', 12)
+        && isOptString(data, 'stockCompany', 80)
+        && isOptString(data, 'stockExchange', 24)
+        && (!('fundingRatePct' in data) || (data.fundingRatePct is number && data.fundingRatePct >= -5 && data.fundingRatePct <= 5))
+        && (!('openInterestUsd' in data) || (data.openInterestUsd is number && data.openInterestUsd >= 0))
+        && (!('maxLeverage' in data) || (data.maxLeverage is number && data.maxLeverage >= 1 && data.maxLeverage <= 100))
+        && data.totalSupply is number && data.totalSupply > 0
+        && data.creatorFeePct is number && data.creatorFeePct >= 0 && data.creatorFeePct <= 5
+        && data.targetCapUsd is number && data.targetCapUsd > 0
+        && data.priceUsd is number && data.priceUsd > 0
+        && data.marketCapUsd is number && data.marketCapUsd >= 0
+        && data.volume24hUsd is number && data.volume24hUsd >= 0
+        && data.bondingProgress is number && data.bondingProgress >= 0 && data.bondingProgress <= 100
+        && data.holdersCount is number && data.holdersCount >= 0
+        && data.createdAt is string && data.createdAt.size() <= 64
+        && data.updatedAt is string && data.updatedAt.size() <= 64;
+    }
+
+    function isValidTrade(data, coinId, tradeId) {
+      return data.keys().hasAll(['id', 'coinId', 'traderUid', 'traderHandle', 'side', 'amountUsd', 'tokenAmount', 'priceUsd', 'createdAt'])
+        && data.keys().hasOnly(['id', 'coinId', 'traderUid', 'traderHandle', 'side', 'amountUsd', 'tokenAmount', 'priceUsd', 'leverage', 'createdAt'])
+        && data.id is string && data.id == tradeId && isValidId(data.id)
+        && data.coinId is string && data.coinId == coinId && isValidId(data.coinId)
+        && data.traderUid is string && data.traderUid.size() >= 1 && data.traderUid.size() <= 128
+        && data.traderHandle is string && data.traderHandle.size() >= 2 && data.traderHandle.size() <= 40
+        && data.side in ['buy', 'sell']
+        && data.amountUsd is number && data.amountUsd > 0 && data.amountUsd <= 1000000
+        && data.tokenAmount is number && data.tokenAmount > 0
+        && data.priceUsd is number && data.priceUsd > 0
+        && (!('leverage' in data) || (data.leverage is number && data.leverage >= 1 && data.leverage <= 100))
+        && data.createdAt is string && data.createdAt.size() <= 64;
+    }
+
+    // =====================================================================
+    // COLLECTION RULES
+    // =====================================================================
+    match /meta/{docId} {
+      allow get: if docId == 'siteConfig';
+      allow list: if false;
+      allow create: if isVerifiedUser()
+        && docId == 'siteConfig'
+        && isValidSiteConfig(incoming())
+        && incoming().founderUid == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    match /users/{userId} {
+      allow get: if isValidId(userId);
+      allow list: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow create: if isVerifiedUser() && isOwner(userId) && isValidId(userId)
+        && isValidUserProfile(incoming(), userId)
+        && (
+          !('badges' in incoming())
+          || incoming().badges.size() == 0
+          || getAfter(/databases/$(database)/documents/meta/siteConfig).data.founderUid == request.auth.uid
+        );
+      allow update: if isVerifiedUser() && isValidId(userId)
+        && isValidUserProfile(incoming(), userId)
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && (
+          (isOwner(userId) && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'handle', 'photoURL', 'profileRim', 'bio', 'theme', 'updatedAt']))
+          || (isFounder() && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'handle', 'photoURL', 'profileRim', 'bio', 'theme', 'badges', 'updatedAt']))
+        );
+      allow delete: if false;
+
+      match /private/{docId} {
+        allow get: if isOwner(userId) && docId == 'account';
+        allow list: if isOwner(userId) && resource.data.uid == request.auth.uid;
+        allow create: if isVerifiedUser() && isOwner(userId) && docId == 'account' && isValidPrivateAccount(incoming(), userId);
+        allow update: if isVerifiedUser() && isOwner(userId) && docId == 'account'
+          && isValidPrivateAccount(incoming(), userId)
+          && incoming().uid == existing().uid
+          && incoming().createdAt == existing().createdAt
+          && incoming().diff(existing()).affectedKeys().hasOnly(['email', 'proEnabled', 'sandboxBalanceUsd', 'updatedAt']);
+        allow delete: if false;
+      }
+
+      match /wallets/{walletId} {
+        allow get: if isOwner(userId) && isValidId(walletId);
+        allow list: if isOwner(userId) && resource.data.uid == request.auth.uid;
+        allow create: if isVerifiedUser() && isOwner(userId) && isValidId(walletId) && isValidWallet(incoming(), userId, walletId);
+        allow update: if isVerifiedUser() && isOwner(userId) && isValidId(walletId)
+          && isValidWallet(incoming(), userId, walletId)
+          && incoming().id == existing().id
+          && incoming().uid == existing().uid
+          && incoming().address == existing().address
+          && incoming().linkedAt == existing().linkedAt
+          && incoming().diff(existing()).affectedKeys().hasOnly(['label', 'isPrimary']);
+        allow delete: if isOwner(userId) && isValidId(walletId);
+      }
+
+      match /holdings/{coinId} {
+        allow get: if isOwner(userId) && isValidId(coinId);
+        allow list: if isOwner(userId) && resource.data.uid == request.auth.uid;
+        allow create: if isVerifiedUser() && isOwner(userId) && isValidId(coinId) && isValidHolding(incoming(), userId, coinId);
+        allow update: if isVerifiedUser() && isOwner(userId) && isValidId(coinId)
+          && isValidHolding(incoming(), userId, coinId)
+          && incoming().uid == existing().uid
+          && incoming().coinId == existing().coinId
+          && incoming().ticker == existing().ticker
+          && incoming().diff(existing()).affectedKeys().hasOnly(['balance', 'avgBuyPriceUsd', 'updatedAt']);
+        allow delete: if isOwner(userId) && isValidId(coinId);
+      }
+
+      match /bookmarks/{projectId} {
+        allow get: if isOwner(userId) && isValidId(projectId);
+        allow list: if isOwner(userId) && resource.data.uid == request.auth.uid;
+        allow create: if isVerifiedUser() && isOwner(userId) && isValidId(projectId) && isValidBookmark(incoming(), userId, projectId);
+        allow delete: if isOwner(userId) && isValidId(projectId);
+      }
+    }
+
+    match /projects/{projectId} {
+      allow get: if isValidId(projectId);
+      allow list: if true;
+      allow create: if isVerifiedUser() && isValidId(projectId)
+        && isValidProject(incoming(), projectId)
+        && incoming().ownerUid == request.auth.uid;
+      allow update: if isVerifiedUser() && isValidId(projectId)
+        && isValidProject(incoming(), projectId)
+        && incoming().id == existing().id
+        && incoming().ownerUid == existing().ownerUid
+        && incoming().createdAt == existing().createdAt
+        && (
+          (existing().ownerUid == request.auth.uid
+            && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'tagline', 'description', 'category', 'artwork', 'customCoverUrl', 'creatorName', 'creatorHandle', 'tags', 'coinId', 'coinTicker', 'contractAddress', 'officialPublished', 'updatedAt']))
+          ||
+          (isFounder()
+            && incoming().diff(existing()).affectedKeys().hasOnly(['verified', 'officialPublished', 'updatedAt']))
+          ||
+          (incoming().diff(existing()).affectedKeys().hasOnly(['views', 'likes', 'updatedAt'])
+            && incoming().views >= existing().views
+            && incoming().views <= existing().views + 1
+            && incoming().likes >= existing().likes - 1
+            && incoming().likes <= existing().likes + 1)
+        );
+      allow delete: if isVerifiedUser() && isValidId(projectId)
+        && (existing().ownerUid == request.auth.uid || isFounder());
+
+      match /files/{fileId} {
+        allow get: if isValidId(projectId) && isValidId(fileId);
+        allow list: if true;
+        allow create: if isVerifiedUser() && isValidId(projectId) && isValidId(fileId)
+          && isValidProjectFile(incoming(), projectId, fileId)
+          && incoming().ownerUid == request.auth.uid
+          && get(/databases/$(database)/documents/projects/$(projectId)).data.ownerUid == request.auth.uid;
+        allow delete: if isVerifiedUser() && isValidId(projectId) && isValidId(fileId)
+          && (get(/databases/$(database)/documents/projects/$(projectId)).data.ownerUid == request.auth.uid || isFounder());
+      }
+
+      match /comments/{commentId} {
+        allow get: if isValidId(projectId) && isValidId(commentId);
+        allow list: if true;
+        allow create: if isVerifiedUser() && isValidId(projectId) && isValidId(commentId)
+          && isValidComment(incoming(), projectId, commentId)
+          && incoming().authorUid == request.auth.uid
+          && exists(/databases/$(database)/documents/projects/$(projectId));
+        allow delete: if isVerifiedUser() && isValidId(projectId) && isValidId(commentId)
+          && (existing().authorUid == request.auth.uid
+              || get(/databases/$(database)/documents/projects/$(projectId)).data.ownerUid == request.auth.uid
+              || isFounder());
+      }
+    }
+
+    match /coins/{coinId} {
+      allow get: if isValidId(coinId);
+      allow list: if true;
+      allow create: if isVerifiedUser() && isValidId(coinId)
+        && isValidCoin(incoming(), coinId)
+        && incoming().ownerUid == request.auth.uid
+        && get(/databases/$(database)/documents/projects/$(incoming().projectId)).data.ownerUid == request.auth.uid;
+      allow update: if isVerifiedUser() && isValidId(coinId)
+        && isValidCoin(incoming(), coinId)
+        && incoming().id == existing().id
+        && incoming().projectId == existing().projectId
+        && incoming().ownerUid == existing().ownerUid
+        && incoming().ticker == existing().ticker
+        && incoming().contractAddress == existing().contractAddress
+        && incoming().createdAt == existing().createdAt
+        && (
+          (existing().ownerUid == request.auth.uid
+            && incoming().diff(existing()).affectedKeys().hasOnly(['creatorWallet', 'assetClass', 'stockSymbol', 'stockCompany', 'stockExchange', 'updatedAt']))
+          ||
+          (incoming().diff(existing()).affectedKeys().hasOnly(['priceUsd', 'marketCapUsd', 'volume24hUsd', 'bondingProgress', 'holdersCount', 'updatedAt']))
+        );
+      allow delete: if isVerifiedUser() && isValidId(coinId)
+        && (existing().ownerUid == request.auth.uid || isFounder());
+
+      match /trades/{tradeId} {
+        allow get: if isValidId(coinId) && isValidId(tradeId);
+        allow list: if true;
+        allow create: if isVerifiedUser() && isValidId(coinId) && isValidId(tradeId)
+          && isValidTrade(incoming(), coinId, tradeId)
+          && incoming().traderUid == request.auth.uid
+          && exists(/databases/$(database)/documents/coins/$(coinId));
+      }
+    }
+  }
+}
